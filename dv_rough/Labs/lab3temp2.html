@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Gantt Chart Example</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+      /* Define the styles for the chart */
+      .gantt-chart {
+        font-family: sans-serif;
+      }
+      .gantt-bar {
+        fill: steelblue;
+      }
+      .gantt-axis path,
+      .gantt-axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+    </style>
+  </head>
+  <body>
+    <svg class="gantt-chart"></svg>
+    <script>
+      // Define the data for the chart
+      const data = [
+        { task: "Task 1", start: new Date(2023, 3, 1), end: new Date(2023, 3, 4) },
+        { task: "Task 2", start: new Date(2023, 3, 2), end: new Date(2023, 3, 5) },
+        { task: "Task 3", start: new Date(2023, 3, 3), end: new Date(2023, 3, 6) }
+      ];
+
+      // Define the dimensions and margins of the chart
+      const margin = { top: 20, right: 20, bottom: 20, left: 100 };
+      const width = 600 - margin.left - margin.right;
+      const height = 300 - margin.top - margin.bottom;
+
+      // Create the SVG container for the chart
+      const svg = d3.select(".gantt-chart")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // Define the x and y scales for the chart
+      const x = d3.scaleTime()
+        .domain([d3.min(data, d => d.start), d3.max(data, d => d.end)])
+        .range([0, width]);
+
+      const y = d3.scaleBand()
+        .domain(data.map(d => d.task))
+        .range([0, height])
+        .padding(0.2);
+
+      // Create the bars for the chart
+      svg.selectAll(".gantt-bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "gantt-bar")
+        .attr("y", d => y(d.task))
+        .attr("height", y.bandwidth())
+        .attr("x", d => x(d.start))
+        .attr("width", d => x(d.end) - x(d.start));
+
+      // Create the x-axis for the chart
+      const xAxis = d3.axisBottom(x);
+      svg.append("g")
+        .attr("class", "gantt-axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+      // Create the y-axis for the chart
+      const yAxis = d3.axisLeft(y);
+      svg.append("g")
+        .attr("class", "gantt-axis")
+        .call(yAxis);
+    </script>
+  </body>
+</html>

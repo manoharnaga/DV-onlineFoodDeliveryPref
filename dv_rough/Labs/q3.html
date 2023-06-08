@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>q3</title>
+  </head>
+  <body>
+    <h1>q3</h1>
+    <div class="line_chart"></div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+      const margin = { top: 10, right: 30, bottom: 30, left: 60 },
+        width = 460 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+      // append the svg object to the body of the page
+      const svg = d3
+        .select(".line_chart")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+      //Read the data
+      d3.csv("./unemployment.csv", function (d) {
+        return { date: d3.timeParse("%b %Y")(d.date), rate: d.rate };
+      }).then(
+        // Now I can use this dataset:
+        function (data) {
+          // Add X axis --> it is a date format
+          const x = d3
+            .scaleTime()
+            .domain(
+              d3.extent(data, function (d) {
+                return d.date;
+              })
+            )
+            .range([0, width]);
+          svg
+            .append("g")
+            .attr("transform", `translate(0, ${height})`)
+            .call(d3.axisBottom(x));
+
+          // Add Y axis
+          const y = d3
+            .scaleLinear()
+            .domain([
+              0,
+              d3.max(data, function (d) {
+                return +d.rate;
+              }),
+            ])
+            .range([height, 0]);
+          svg.append("g").call(d3.axisLeft(y));
+
+          // Add the line
+          svg
+            .append("path")
+            .datum(data)
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 1.5)
+            .attr(
+              "d",
+              d3
+                .line()
+                .x(function (d) {
+                  return x(d.date)*2;
+                })
+                .y(function (d) {
+                  return y(d.rate)*3;
+                })
+            )
+            .transition()
+            .duration(2000)
+            .attr(
+              "d",
+              d3
+                .line()
+                .x(function (d) {
+                  return x(d.date);
+                })
+                .y(function (d) {
+                  return y(d.rate);
+                })
+            );
+
+          const finalLine = d3
+            .line()
+            .x((d) => x(d.date))
+            .y((d) => y(d.rate));
+
+          // svg
+          //   .append("path")
+          //   .datum(data)
+          //   .attr("d", finalLine)
+          //   .attr("stroke", "red")
+          //   .attr("stroke-width", 2)
+          //   .attr("fill", "none");
+
+          // svg.select("path").transition().duration(1000).attr("d", finalLine);
+        }
+      );
+    </script>
+  </body>
+</html>

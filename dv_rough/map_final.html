@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+
+    <script>
+        L_NO_TOUCH = false;
+        L_DISABLE_3D = false;
+    </script>
+
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <style>
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            left: 0;
+        }
+    </style>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script src="https://rawgit.com/jasondavies/d3-cloud/master/build/d3.layout.cloud.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+        integrity="sha512-b4+4P4oQ5O5ZBt5+1e5S5/lC4iL78vNp/zDjsLV4N4/vbj5/5sozGl5tl5thFwSltc/1W8mLcigG/i2mG9mRQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <style>
+        body {
+            padding-top: 40px;
+        }
+        #cloud{
+            text-align: center;
+            padding-top: 150px;
+            padding-bottom: 140px;
+            
+        }
+        #map_d3747cd81334af7a3d473810d0d98e8c {
+            /* position: absolute; */
+            /* align: right; */
+            text-align: right;
+            margin-left: auto;
+            margin-right: 10px;
+            width: 50%;
+            height: 90%;
+            left: 0.0%;
+            top: 0.0%;
+            border: 3px solid rgb(54, 150, 134);
+            border-radius: 10px;
+        }
+
+        .leaflet-container {
+            font-size: 1rem;
+        }
+    </style>
+
+</head>
+
+<body>
+
+
+    <div class="folium-map" id="map_d3747cd81334af7a3d473810d0d98e8c"></div>
+    <div id="cloud"></div>
+
+</body>
+<script src="mapping.js"></script>
+<script src="wordcloud.js"></script>
+
+</html>

@@ -1,0 +1,44 @@
+[
+    {
+        "group": "18-20",
+        "Non-Veg": "14",
+        "Veg": "0",
+        "Bakery": "0",
+        "Sweets" : "0"
+    },
+
+    {
+        "group": "21-23",
+        "Non-Veg": "122",
+        "Veg": "30",
+        "Bakery": "1",
+        "Sweets" : "0"
+    },
+    
+    {
+        "group": "24-26",
+        "Non-Veg": "80",
+        "Veg": "20",
+        "Bakery": "2",
+        "Sweets" : "0"
+    },
+    
+
+    {
+        "group": "27-29",
+        "Non-Veg": "32",
+        "Veg": "4",
+        "Bakery": "0",
+        "Sweets" : "0"
+    },
+    {
+        "group": "30-32",
+        "Non-Veg": "67",
+        "Veg": "15",
+        "Bakery": "1",
+        "Sweets" : "0"
+    }
+    
+    
+
+]

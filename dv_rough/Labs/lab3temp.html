@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>q1</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/d3-time.v3.min.js"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+    ></script>
+    <style type="text/css">
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #fff;
+        font-family: "Open-Sans", sans-serif;
+      }
+
+      #container {
+        margin: 0 auto;
+        position: relative;
+        width: 800px;
+        overflow: visible;
+      }
+
+      .svg {
+        width: 800px;
+        height: 400px;
+        overflow: visible;
+        position: absolute;
+      }
+
+      .grid .tick {
+        stroke: lightgrey;
+        opacity: 0.3;
+        shape-rendering: crispEdges;
+      }
+      .grid path {
+        stroke-width: 0;
+      }
+
+      #tag {
+        color: white;
+        background: #fa283d;
+        width: 150px;
+        position: absolute;
+        display: none;
+        padding: 3px 6px;
+        margin-left: -80px;
+        font-size: 11px;
+      }
+
+      #tag:before {
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        left: 50%;
+        margin-left: -5px;
+        position: absolute;
+        width: 0;
+        border-width: 10px;
+        border-bottom-color: #fa283d;
+        top: -20px;
+      }
+
+      #submit-button {
+        padding: 3px 7px 3px 7px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Weekly TimeTable</h1>
+    <select id="select-branch">
+      <option value="selectbranch">Select Branch...</option>
+      <option value="cse">CSE</option>
+      <option value="ece">ECE</option>
+      <option value="cld">CLD</option>
+    </select>
+
+    <!-- assuming only four years in college -->
+    <select id="select-year">
+      <option value="selectyear">Select Year...</option>
+      <option value="ug1">UG1</option>
+      <option value="ug2">UG2</option>
+      <option value="ug3">UG3</option>
+      <option value="ug4">UG4</option>
+    </select>
+
+    <button id="submit-button" disabled>Submit</button>
+
+    <div id="container">
+      <div class="svg"></div>
+      <div id="tag"></div>
+    </div>
+    
+
+    <script>
+      var w = 1100;
+      var h = 400;
+
+      var svg = d3
+        .selectAll(".svg")
+        //.selectAll("svg")
+        .append("svg")
+        .attr("width", w)
+        .attr("height", h)
+        .attr("class", "svg");
+
+      var colArray = [
+        "#33b5e5",
+        "#CC0000",
+        "#669900",
+        "#ffbb33",
+        "#FF0000",
+        "#00FF00",
+        "#0000FF",
+        "#FFFF00",
+        "#00FFFF",
+        "#FF00FF",
+        "#A52A2A",
+        "#DEB887",
+        "#5F9EA0",
+        "#7FFF00",
+        "#D2691E",
+        "#FF7F50",
+        "#6495ED",
+        "#FFF8DC",
+        "#DC143C",
+        "#00FFFF",
+        "#00008B",
+        "#008B8B",
+        "#B8860B",
+        "#A9A9A9",
+        "#006400",
+        "#BDB76B",
+        "#8B008B",
+        "#556B2F",
+        "#FF8C00",
+        "#9932CC",
+        "#8B0000",
+        "#E9967A",
+        "#8FBC8F",
+      ];
+
+      var taskArray = [
+        {
+          task: "PO0",
+          type: "Machine0",
+          startTime: "0:00", //year/month/day
+          endTime: "10:00",
+          details: "This actually didn't take any conceptualization",
+        },
+
+        {
+          task: "PO1",
+          type: "Machine0",
+          startTime: "11:00",
+          endTime: "14:00",
+          details: "No sketching either, really",
+        },
+
+        {
+          task: "PO2",
+          type: "Machine0",
+          startTime: "15:00",
+          endTime: "19:00",
+        },
+
+        {
+          task: "PO1",
+          type: "Machine1",
+          startTime: "0:00",
+          endTime: "8:00",
+          details: "all three lines of it",
+        },
+
+        {
+          task: "PO0",
+          type: "Machine1",
+          startTime: "10:00",
+          endTime: "18:00",
+        },
+        {
+          task: "PO2",
+          type: "Machine1",
+          startTime: "19:00",
+          endTime: "26:00",
+        },
+
+        {
+          task: "PO0",
+          type: "Machine2",
+          startTime: "18:00",
+          endTime: "22:00",
+          details: "This counts, right?",
+        },
+
+        {
+          task: "PO1",
+          type: "Machine2",
+          startTime: "23:00",
+          endTime: "29:00",
+        },
+        {
+          task: "PO1",
+          type: "Machine3",
+          startTime: "14:00",
+          endTime: "19:00",
+          details: "All the things",
+        },
+
+        {
+          task: "PO2",
+          type: "Machine3",
+          startTime: "26:00",
+          endTime: "29:00",
+        },
+
+        {
+          task: "PO0",
+          type: "Machine4",
+          startTime: "30:00",
+          endTime: "32:00",
+        },
+      ];
+
+      console.log(d3.time);
+      // var timeFormat = d3.time.format("%H:%M");
+
+      var timeScale = d3.time
+        .scale()
+        .domain([
+          d3.min(taskArray, function (d) {
+            return timeFormat.parse(d.startTime);
+          }),
+          d3.max(taskArray, function (d) {
+            return timeFormat.parse(d.endTime);
+          }),
+        ])
+        .range([0, w - 100]);
+
+      var categories = new Array();
+      var pos = new Array();
+
+      for (var i = 0; i < taskArray.length; i++) {
+        categories.push(taskArray[i].type);
+      }
+
+      for (var i = 0; i < taskArray.length; i++) {
+        pos.push(taskArray[i].task);
+      }
+
+      var catsUnfiltered = categories; //for vert labels
+
+      categories = checkUnique(categories);
+
+      pos = checkUnique(pos);
+
+      makeGant(taskArray, categories, w, h);
+
+      //var title = svg.append("text")
+      //              .text("Gantt Chart Process")
+      //              .attr("x", w/2)
+      //              .attr("y", 25)
+      //              .attr("text-anchor", "middle")
+      //              .attr("font-size", 18)
+      //              .attr("fill", "#009FFC");
+
+      function makeGant(tasks, categories, pageWidth, pageHeight) {
+        var barHeight = 40;
+        var gap = 75;
+        var topPadding = 0;
+        var sidePadding = 0;
+
+        var colorScale = d3.scale
+          .linear()
+          .domain([0, categories.length])
+          .range(["#00B9FA", "#F95002"])
+          .interpolate(d3.interpolateHcl);
+
+        makeGrid(sidePadding, topPadding, pageWidth, pageHeight);
+        drawRects(
+          tasks,
+          categories,
+          gap,
+          topPadding,
+          sidePadding,
+          barHeight,
+          colorScale,
+          pageWidth,
+          pageHeight
+        );
+        //vertLabels(gap, topPadding, sidePadding, barHeight, colorScale);
+      }
+
+      function drawRects(
+        theArray,
+        theCategories,
+        theGap,
+        theTopPad,
+        theSidePad,
+        theBarHeight,
+        theColorScale,
+        w,
+        h
+      ) {
+        var rectangles = svg
+          .append("g")
+          .selectAll("rect")
+          .data(theArray)
+          .enter();
+
+        var innerRects = rectangles
+          .append("rect")
+          .attr("rx", 3)
+          .attr("ry", 3)
+          .attr("x", function (d) {
+            return timeScale(timeFormat.parse(d.startTime)) + theSidePad;
+          })
+          .attr("y", function (d, i) {
+            for (var j = 0; j < categories.length; j++) {
+              if (d.type == categories[j]) {
+                return j * theGap + theTopPad + 24;
+              }
+            }
+          })
+          .attr("width", function (d) {
+            return (
+              timeScale(timeFormat.parse(d.endTime)) -
+              timeScale(timeFormat.parse(d.startTime))
+            );
+          })
+          .attr("height", theBarHeight)
+          .attr("stroke", "none")
+          .attr("fill", function (d) {
+            for (var i = 0; i < pos.length; i++) {
+              if (d.task == pos[i]) {
+                return colArray[i];
+              }
+            }
+          });
+
+        var rectText = rectangles
+          .append("text")
+          .text(function (d) {
+            return d.task;
+          })
+          .attr("x", function (d) {
+            return (
+              (timeScale(timeFormat.parse(d.endTime)) -
+                timeScale(timeFormat.parse(d.startTime))) /
+                2 +
+              timeScale(timeFormat.parse(d.startTime)) +
+              theSidePad
+            );
+          })
+          .attr("y", function (d, i) {
+            for (var j = 0; j < categories.length; j++) {
+              if (d.type == categories[j]) {
+                return j * theGap + 24 + theTopPad + 24;
+              }
+            }
+          })
+          .attr("font-size", 11)
+          .attr("text-anchor", "middle")
+          .attr("text-height", theBarHeight)
+          .attr("fill", "#fff");
+
+        rectText
+          .on("mouseover", function (e) {
+            // console.log(this.x.animVal.getItem(this));
+            var tag = "";
+
+            if (d3.select(this).data()[0].details != undefined) {
+              tag =
+                "Task: " +
+                d3.select(this).data()[0].task +
+                "<br/>" +
+                "Type: " +
+                d3.select(this).data()[0].type +
+                "<br/>" +
+                "Starts: " +
+                d3.select(this).data()[0].startTime +
+                "<br/>" +
+                "Ends: " +
+                d3.select(this).data()[0].endTime +
+                "<br/>" +
+                "Details: " +
+                d3.select(this).data()[0].details;
+            } else {
+              tag =
+                "Task: " +
+                d3.select(this).data()[0].task +
+                "<br/>" +
+                "Type: " +
+                d3.select(this).data()[0].type +
+                "<br/>" +
+                "Starts: " +
+                d3.select(this).data()[0].startTime +
+                "<br/>" +
+                "Ends: " +
+                d3.select(this).data()[0].endTime;
+            }
+            var output = document.getElementById("tag");
+
+            var x = this.x.animVal.getItem(this) + "px";
+            var y = this.y.animVal.getItem(this) + 25 + "px";
+
+            output.innerHTML = tag;
+            output.style.top = y;
+            output.style.left = x;
+            output.style.display = "block";
+          })
+          .on("mouseout", function () {
+            var output = document.getElementById("tag");
+            output.style.display = "none";
+          });
+
+        innerRects
+          .on("mouseover", function (e) {
+            //console.log(this);
+            var tag = "";
+
+            if (d3.select(this).data()[0].details != undefined) {
+              tag =
+                "Task: " +
+                d3.select(this).data()[0].task +
+                "<br/>" +
+                "Type: " +
+                d3.select(this).data()[0].type +
+                "<br/>" +
+                "Starts: " +
+                d3.select(this).data()[0].startTime +
+                "<br/>" +
+                "Ends: " +
+                d3.select(this).data()[0].endTime +
+                "<br/>" +
+                "Details: " +
+                d3.select(this).data()[0].details;
+            } else {
+              tag =
+                "Task: " +
+                d3.select(this).data()[0].task +
+                "<br/>" +
+                "Type: " +
+                d3.select(this).data()[0].type +
+                "<br/>" +
+                "Starts: " +
+                d3.select(this).data()[0].startTime +
+                "<br/>" +
+                "Ends: " +
+                d3.select(this).data()[0].endTime;
+            }
+            var output = document.getElementById("tag");
+
+            var x = this.x.animVal.value + this.width.animVal.value / 2 + "px";
+            var y = this.y.animVal.value + 25 + "px";
+
+            output.innerHTML = tag;
+            output.style.top = y;
+            output.style.left = x;
+            output.style.display = "block";
+          })
+          .on("mouseout", function () {
+            var output = document.getElementById("tag");
+            output.style.display = "none";
+          });
+      }
+
+      function makeGrid(theSidePad, theTopPad, w, h) {
+        var xAxis = d3.svg
+          .axis()
+          .scale(timeScale)
+          .orient("bottom")
+          .ticks(d3.time.hours, 2)
+          .tickFormat(timeFormat)
+          .tickSubdivide(true)
+          .tickSize(2);
+
+        var y = d3.scale
+          .ordinal()
+          .domain(categories)
+          .rangeRoundBands([0, categories.length * 75], 0);
+        yAxis = d3.svg.axis().scale(y).orient("left").tickSize(2);
+        svg
+          .append("g")
+          .attr("class", "x axis")
+          .attr(
+            "transform",
+            "translate(" + theSidePad + ", " + categories.length * 75 + ")"
+          )
+          .transition()
+          .call(xAxis);
+        svg.append("g").attr("class", "y axis").transition().call(yAxis);
+
+        //var grid = svg.append('g')
+        //    .attr('class', 'grid')
+        //    .attr('transform', 'translate(' +theSidePad + ', ' + (h - 50) + ')')
+        //   .call(xAxis)
+        //  .selectAll("text")
+        //         .style("text-anchor", "middle")
+        //         .attr("fill", "#000")
+        //        .attr("stroke", "none")
+        //         .attr("font-size", 10)
+        //         .attr("dy", "1em");
+      }
+
+      function vertLabels(
+        theGap,
+        theTopPad,
+        theSidePad,
+        theBarHeight,
+        theColorScale
+      ) {
+        var numOccurances = new Array();
+        var prevGap = 0;
+
+        for (var i = 0; i < categories.length; i++) {
+          numOccurances[i] = [
+            categories[i],
+            getCount(categories[i], catsUnfiltered),
+          ];
+        }
+
+        var axisText = svg
+          .append("g") //without doing this, impossible to put grid lines behind text
+          .selectAll("text")
+          .data(numOccurances)
+          .enter()
+          .append("text")
+          .text(function (d) {
+            return d[0];
+          })
+          .attr("x", 10)
+          .attr("y", function (d, i) {
+            return (d[1] * theGap) / 2 + i * (theGap + 30) + theTopPad;
+          })
+          .attr("font-size", 11)
+          .attr("text-anchor", "start")
+          .attr("text-height", 14)
+          .attr("fill", function (d) {
+            for (var i = 0; i < categories.length; i++) {
+              if (d[0] == categories[i]) {
+                //  console.log("true!");
+                return colArray[i];
+              }
+            }
+          });
+      }
+
+      //from this stackexchange question: http://stackoverflow.com/questions/1890203/unique-for-arrays-in-javascript
+      function checkUnique(arr) {
+        var hash = {},
+          result = [];
+        for (var i = 0, l = arr.length; i < l; ++i) {
+          if (!hash.hasOwnProperty(arr[i])) {
+            //it works with objects! in FF, at least
+            hash[arr[i]] = true;
+            result.push(arr[i]);
+          }
+        }
+        return result;
+      }
+
+      //from this stackexchange question: http://stackoverflow.com/questions/14227981/count-how-many-strings-in-an-array-have-duplicates-in-the-same-array
+      function getCounts(arr) {
+        var i = arr.length, // var to loop over
+          obj = {}; // obj to store results
+        while (i) obj[arr[--i]] = (obj[arr[i]] || 0) + 1; // count occurrences
+        return obj;
+      }
+
+      // get specific from everything
+      function getCount(word, arr) {
+        return getCounts(arr)[word] || 0;
+      }
+    </script>
+  </body>
+</html>

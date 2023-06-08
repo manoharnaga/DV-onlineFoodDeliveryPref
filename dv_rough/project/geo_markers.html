@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+
+<!-- Load d3.js and the geo projection plugin -->
+<script src="https://d3js.org/d3.v7.js"></script>
+<script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+
+<!-- Load Leaflet -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+  integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+  crossorigin=""
+/>
+<script
+  src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+  integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+  crossorigin=""
+></script>
+
+<!-- Create an element where the map will take place -->
+<div id="mapid"></div>
+
+<style>
+  #mapid {
+    height: 700px;
+    width: 700px;
+  }
+</style>
+
+<body>
+  <script>
+    // mapid is the id of the div where the map will appear
+    var map = L.map("mapid").setView([12.9716, 77.5946], 12); // center position + zoom
+
+    // Add a tile to the map = a background. Comes from OpenStreetmap
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(map);
+    
+    // Add a svg layer to the map
+    L.svg().addTo(map);
+
+    async function temp() {
+      const dataTemp = await d3.csv("./onlinedeliverydata.csv");
+
+      var dataTemp2 = [];
+      dataTemp.forEach((d) => {
+        dataTemp2.push({
+          long: d.longitude,
+          lat: d.latitude,
+        });
+      });
+      const data = dataTemp2;
+      console.log(data);
+      data.forEach(d => {
+        var lat = d.lat;
+        var lng = d.long;
+        L.marker([lat, lng]).addTo(map);
+      });
+    }
+
+    temp();
+  </script>
+</body>

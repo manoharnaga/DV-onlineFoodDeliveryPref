@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <!-- Load Leaflet -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+      integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+      integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+      crossorigin=""
+    ></script>
+
+    <style>
+      #mapid {
+        height: 700px;
+        width: 700px;
+      }
+      .text-cnt {
+        font-size: 16px;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: white;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Create an element where the map will take place -->
+    <h2>The radius of the circle indicates the number of orders from that point(center of the circle)</h2>
+    <div id="mapid"></div>
+    <!-- Load d3.js and the geo projection plugin -->
+    <script src="https://d3js.org/d3.v7.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+
+    <script>
+      // mapid is the id of the div where the map will appear
+      var map = L.map("mapid").setView([12.9716, 77.5946], 12); // center position + zoom
+
+      // Add a tile to the map = a background. Comes from OpenStreetmap
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+          'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Add a svg layer to the map
+      L.svg().addTo(map);
+
+      async function temp() {
+        const dataTemp = await d3.csv("./onlinedeliverydata.csv");
+
+        var dataTemp2 = [];
+        dataTemp.forEach((d) => {
+          dataTemp2.push({
+            lng: d.longitude,
+            lat: d.latitude,
+            flag: 0,
+          });
+        });
+
+        // const data = dataTemp2;
+        var dataTemp3 = [];
+        for (let i = 0; i < dataTemp2.length; i++) {
+          const elem = dataTemp2[i];
+          if(dataTemp2[i].flag) continue;
+          // dataTemp2[i].flag = 1;
+          var cnt = 0;
+          for (let j = 0; j < dataTemp2.length; j++) {
+            if (
+              elem.lat === dataTemp2[j].lat &&
+              elem.lng === dataTemp2[j].lng
+            ) {
+              cnt++;
+              dataTemp2[j].flag = 1;
+            }
+          }
+          dataTemp3.push({ lat: elem.lat, lng: elem.lng, value: cnt });
+        }
+
+        const data = dataTemp3;
+        console.log(data);
+        // console.log(data.length==dataTemp.length);
+
+        data.forEach((d) => {
+          var lat = d.lat;
+          var lng = d.lng;
+          var value = d.value;
+          console.log(value);
+          L.circle([lat, lng], {
+            color: "black",
+            fillColor: "#00695C",
+            fillOpacity: 0.3,
+            radius: value * 50,
+            name: "P-2",
+            interactive: true,
+          })
+            .addTo(map)
+            .bindTooltip(value.toString(), {
+              permanent: false,
+              direction: "top",
+              className: "text-cnt",
+            });
+          //   L.bindPopup(value).addTo(map);
+        });
+      }
+
+      temp();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <!-- MDB -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.2.0/mdb.min.css" rel="stylesheet" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+
+    <style>
+        .tick text {
+            font-size: 15px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container container-fluid my-5">
+
+        <svg width="1100" height="700" id='svg1'></svg>
+
+        <div class="my-5"></div>
+
+        <svg width="1100" height="700" id='svg2'></svg>
+
+        <div class="my-5" id='div-1'></div>
+
+        <svg width="1100" height="700" id='svg3'></svg>
+
+
+
+        <!-- <svg width="1100" height="700" id='svg3'></svg> -->
+
+
+    </div>
+
+    <script>
+
+        const svg1 = d3.select('#svg1');
+        const svg2 = d3.select('#svg2');
+        const svg3 = d3.select('#svg3');
+
+        const width = +svg1.attr('width');
+        const height = +svg1.attr('height');
+
+        const margin = {
+            top: 80,
+            right: 30,
+            bottom: 50,
+            left: 90
+        };
+
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        const renderGroupedBarPlot = (data, subgroups, groups, svg, max) => {
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+
+            var x = d3.scaleBand()
+                .domain(groups)
+                .range([0, innerWidth])
+                .padding([0.2]);
+
+            g.append("g")
+                .attr("transform", "translate(0," + innerHeight + ")")
+                .call(d3.axisBottom(x));
+
+            // Add Y axis
+            var y = d3.scaleLinear()
+                .domain([0, max])
+                .range([innerHeight, 0]);
+
+            g.append("g")
+                .call(d3.axisLeft(y));
+
+            // Another scale for subgroup position?
+            var xSubgroup = d3.scaleBand()
+                .domain(subgroups)
+                .range([0, x.bandwidth()])
+                .padding([0.05])
+
+            // color palette = one color per subgroup
+            var color = d3.scaleOrdinal()
+                .domain(subgroups)
+                .range(['#7B1FA2', '#9C27B0', '#BA68C8', '#E1BEE7'])
+
+            // Show the bars
+            g.append("g")
+                .selectAll("g")
+                // Enter in data = loop group per group
+                .data(data)
+                .enter()
+                .append("g")
+                .attr("transform", function (d) { return "translate(" + x(d.group) + ",0)"; })
+                .selectAll("rect")
+                .data(function (d) { return subgroups.map(function (key) { return { key: key, value: d[key] }; }); })
+                .enter().append("rect")
+                .attr("x", function (d) { return xSubgroup(d.key); })
+                .attr("y", function (d) { return y(d.value) - 10; })
+                .attr("width", xSubgroup.bandwidth())
+                .attr("height", function (d) { return innerHeight - y(d.value); })
+                .attr("fill", function (d) { return color(d.key); });
+
+        }
+
+
+        d3.json('./Data/age-meal.json').then((data) => {
+
+            const subgroups = [
+                "Breakfast", "Lunch", "Dinner", "Snacks"
+            ];
+
+            var groups = ["18-20", "21-23", "24-26", "27-29", "30-32"]
+
+            console.log(data);
+            renderGroupedBarPlot(data, subgroups, groups, svg1, 60);
+
+
+        })
+
+        d3.json('./Data/pref-age.json').then((data) => {
+            const subgroups = [
+                "Non-Veg",
+                "Veg",
+                "Bakery",
+                "Sweets"
+            ]
+            var groups = ["18-20", "21-23", "24-26", "27-29", "30-32"];
+
+            console.log(data);
+            renderGroupedBarPlot(data, subgroups, groups, svg2, 130);
+        })
+
+        const renderBarPlot = (data, svg) => {
+
+            console.log(data);
+
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+
+            // const groups = [''];
+
+            var x = d3.scaleBand()
+                .domain(d3.map(data, d => d['name']))
+                .range([0, innerWidth])
+                .padding([0.3]);
+
+            g.append("g")
+                .attr('class', 'bar-plot-axis')
+                .attr("transform", "translate(0," + innerHeight + ")")
+                .call(d3.axisBottom(x));
+
+            var y = d3.scaleLinear()
+                .domain([0, d3.max(data.map(d => d['value'])) + 1])
+                .range([innerHeight, 0]);
+
+            g.append("g")
+                .attr('class', 'bar-plot-axis')
+                .call(d3.axisLeft(y));
+
+            g.selectAll('rect')
+                .data(data)
+                .enter()
+                .append('rect')
+                .transition()
+                .duration(300)
+                .attr('x', d => x(d['name']))
+                .attr('y', d => y(d['value']))
+                .attr('height', d => innerHeight - y(d['value']))
+                .attr('width', x.bandwidth())
+                .attr('fill', '#b0adff')
+                .attr('stroke', '#8330ff');
+        }
+
+        const data2 = [
+            {
+                name: "Ease and convenient",
+                value: 610
+            },
+            {
+                name: "Time saving",
+                value: 633
+            },
+            {
+                name: "More restaurant choices",
+                value: 659
+            },
+            {
+                name: "Good Food quality",
+                value: 496
+            },
+            {
+                name: "Easy Payment option",
+                value: 534
+            },
+            {
+                name: "More Offers and Discount",
+                value: 498
+            },
+            {
+                name: "Good Tracking system",
+                value: 696
+            }
+        ]
+
+
+        const data3 = [
+            {
+                name: ' Self Cooking ',
+                value: 116
+            },
+            {
+                name: ' Health Concern ',
+                value: 288
+            },
+            {
+                name: ' Late Delivery ',
+                value: 257
+            },
+            {
+                name: ' Poor Hygiene ',
+                value: 188
+            },
+            {
+                name: ' Bad past experience ',
+                value: 1
+            },
+            {
+                name: ' Unavailability ',
+                value: -117
+            },
+            {
+                name: ' Unaffordable ',
+                value: -334
+            },
+
+        ]
+        renderBarPlot(data2, svg3)
+
+
+
+
+
+    </script>
+    <!-- MDB -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.2.0/mdb.min.js"></script>
+
+</body>
+
+
+
+</html>

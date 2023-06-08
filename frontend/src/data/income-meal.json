@@ -1,0 +1,37 @@
+[
+    {
+        "group": "No Income",
+        "Breakfast": 17.647059,
+        "Lunch": 30.481283,
+        "Dinner": 24.064171,
+        "Snacks": 27.807487
+    },
+    {
+        "group": "Below Rs 10000",
+        "Breakfast": 4.000000,
+        "Lunch": 48.000000,
+        "Dinner": 28.000000,
+        "Snacks": 20.000000
+    },
+    {
+        "group": "More than 50000",
+        "Breakfast": 12.903226,
+        "Lunch": 29.032258,
+        "Dinner": 14.516129,
+        "Snacks": 43.548387
+    },
+    {
+        "group": "10001 to 25000",
+        "Breakfast": 11.428571,
+        "Lunch": 42.857143,
+        "Dinner": 2.857143,
+        "Snacks": 42.857143
+    },
+    {
+        "group": "25001 to 25000",
+        "Breakfast": 10.144928,
+        "Lunch": 26.086957,
+        "Dinner": 27.536232,
+        "Snacks": 36.231884
+    }
+]

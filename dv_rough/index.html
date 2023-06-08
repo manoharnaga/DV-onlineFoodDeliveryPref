@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>q4</title>
+  </head>
+  <body>
+    <h1>q4</h1>
+
+    <div id="bar_chart"></div>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+      // set the dimensions and margins of the graph
+      var margin = { top: 30, right: 30, bottom: 70, left: 60 },
+        width = 960 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+      // append the svg object to the body of the page
+      var svg = d3
+        .select("#bar_chart")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom + 100)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      const dataFunc = async () => {
+        var likartList = {
+          Neutral: 1,
+          Agree: 2,
+          Disagree: -2,
+          "Strongly agree": 4,
+          "Strongly disagree": -4,
+        };
+
+        // var dataObj = {};
+        // await d3.csv("./onlinedeliverydata.csv", (d) => {
+        //   for (var ele in d) {
+        //     for (var checker in likartList) {
+        //       if (checker === d[ele]) {
+        //         // console.log(d[ele]);
+        //         // if ("Strongly agree" in dataObj){
+        //         //     console.log(dataObj["Strongly agree"]);
+        //         // }
+        //         if(ele in dataObj){
+        //             // dataObj[ele] += checker[d[ele]];
+        //         }
+        //         else{
+        //             console.log(d[ele],likartList[d[ele]],"df");
+        //             dataObj[ele] = likartList[d[ele]];
+        //         }
+        //         break;
+        //       }
+        //     }
+        //   }
+        // });
+
+        // console.log(dataObj);
+
+        // var data = [];
+        // for (var element in dataObj) {
+        //   //   console.log(dataObj[element]);
+        //   data.push({ pref: element, value: dataObj[element] });
+        // }
+        // console.log(data);
+        const data = [
+          {
+            pref: "Ease and convenient",
+            value: 610,
+          },
+          {
+            pref: "Time saving",
+            value: 633,
+          },
+          {
+            pref: "More restaurant choices",
+            value: 659,
+          },
+          {
+            pref: "Good Food quality",
+            value: 496,
+          },
+          {
+            pref: "Easy Payment option",
+            value: 534,
+          },
+          {
+            pref: "More Offers and Discount",
+            value: 498,
+          },
+          {
+            pref: "Good Tracking system",
+            value: 696,
+          },
+        ];
+        
+        var x = d3
+          .scaleBand()
+          .range([0, width])
+          .domain(
+            data.map(function (d) {
+              return d.pref;
+            })
+          )
+          .padding(0.5);
+        svg
+          .append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x))
+          .selectAll("text")
+          .attr("transform", "translate(-10,5)rotate(-49)")
+          .style("text-anchor", "end");
+
+        var maxDataCnt = 0;
+        data.forEach((d) => {
+          maxDataCnt = Math.max(maxDataCnt, d.value);
+        });
+
+        // Add Y axis
+
+        var y = d3.scaleLinear().domain([0, maxDataCnt]).range([height, 0]);
+
+        svg.append("g").call(d3.axisLeft(y));
+
+        // Bars
+        svg
+          .selectAll("mybar")
+          .data(data)
+          .enter()
+          .append("rect")
+          .attr("x", function (d) {
+            return x(d.pref);
+          })
+          .attr("y", function (d) {
+            return y(d.value);
+          })
+          .attr("width", x.bandwidth())
+          .attr("height", function (d) {
+            return height - y(d.value);
+          })
+          .attr("fill", "#69b3a2");
+      };
+
+      dataFunc();
+    </script>
+  </body>
+</html>

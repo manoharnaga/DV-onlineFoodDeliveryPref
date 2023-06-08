@@ -1,0 +1,7 @@
+"Num","Meeting Name","Type","starttime","endtime","Duration","Attendes"
+"1","Project presentation","In person","7:00","8:30","1.5 hour","Tony,Sarath,Sam,Dev"
+"2","Team Meeting","In person","9:00","10:00","1 hour","Tony,Sarath,Sam,Dev",
+"3","Client Meeting","Virtual","10:30","11:30","1 hour","Bob,Tony,Sarath,Sam,Dev"
+"4","Project review","Virtual","14:00","15:00","1 hour","Alice,Tony,Sarath,Sam,Dev"
+"5","Project Disussion","In person","16:00","18:00","2 hours","Tony,Sarath,Sam,Dev"
+"6","Training session","Virtual","21:30","22:00","0.5 hour","Tony,Sarath,Sam,Dev,Any"

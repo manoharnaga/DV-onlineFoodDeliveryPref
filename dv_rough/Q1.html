@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Bubble Timeline Chart</title>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+</head>
+
+<body>
+    <div id="chart"></div>
+    <script>
+        // setting svg dimesions
+            var margin = { top: 50, right: 300, bottom: 50, left: 90 },
+            width = 1500 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+        // Time parsing
+        var parseTime = d3.timeParse("%H:%M");
+        // x and y ranges
+        var x = d3.scaleTime().range([0, width]);
+        var y = d3.scaleLinear().range([height, 0]);
+        // SVG creation
+        var svg = d3.select("#chart").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        // load the data
+        d3.csv("data.csv", function (data) {
+            // format the data
+            data.forEach(function (d) {
+                d.starttime = parseTime(d.starttime);
+                d.endtime = parseTime(d.endtime);
+                d.duration = +d.Duration.split(" ")[0];
+            });
+            console.log(data);
+            // x scale domain
+            var x = d3.scaleTime()
+                .range([0, width]);
+            //starting time on x axis
+            var startTimeExtent = d3.extent(data, function (d) { return d.starttime; });
+    
+            var startTimeMin = new Date(startTimeExtent[0]);
+            startTimeMin.setHours(startTimeMin.getHours());
+            //adding 3 hours extra to the last start time
+            var startTimeMax = new Date(startTimeExtent[1]);
+            startTimeMax.setHours(startTimeMax.getHours() + 2);
+            // Set the x domain using the new minimum and maximum start times
+            x.domain([startTimeMin, startTimeMax]);
+            // x.domain(d3.extent(data, function (d) { return d.starttime; }));
+            y.domain([0, d3.max(data, function (d) { return d.Attendes; })]);
+            // add the bubbles
+            svg.selectAll("bubble")
+                .data(data)
+                .enter().append("circle")
+                .attr("color", "blue")
+                .attr("cx", function (d) { return x(d.starttime); })
+                .attr("cy", 200)
+                .attr("r", function (d) { return d.duration * 10; })
+                .attr("fill", function (d) {
+                    if (d.Type === "In person") {
+                        return "blue";
+                    } else {
+                        return "#b36200";
+                    }
+                })
+            svg.selectAll(".bubble")
+                .attr("text-anchor", "middle")
+            svg.selectAll(".line")
+                .data(data)
+                .enter().append("line")
+                .attr("x1", function (d) { return x(d.starttime); })
+                .attr("y1", 200)
+                .attr("x2", function (d) { return x(d.starttime); })
+                .attr("y2", function (d, i) {
+                    if (i % 2 === 0)
+                        return 304;
+                    else
+                        return 44;
+                })
+                .attr("stroke", "steelblue")
+                .attr("stroke-width", 2)
+                //creating textboxes
+                .each(function (d, i) {
+                    var yPosition = (i % 2 == 0) ? 314 : 39;
+                    var line = d3.select(this);
+                    var foreignObject = svg.append("foreignObject")
+                        .attr("x", line.attr("x2") - 80)
+                        .attr("y", yPosition - 30)
+                        .attr("width", 200)
+                        .attr("height", 400)
+                    var body = foreignObject.append("xhtml:body")
+                        .style("font", "14px 'Helvetica Neue'")
+                        .style("text-align", "left")
+                        .html("<div style='background-color: #fff; padding: 5px; border: 2px solid #295D8A; border-radius: 12px'>" +
+                            "<b style='text-decoration: underline'>Meeting: </b> " + d["Meeting Name"] + "<br>" +
+                            "<b style='text-decoration: underline'>Type: </b> " + d["Type"] + "<br>" +
+                            "<b style='text-decoration: underline'>Duration: </b>"+d["Duration"]+"<br>"+
+                            "<b style='text-decoration: underline'>Attendees: </b> " + d["Attendes"] +
+                            "</div>");
+                });
+            svg.append("g")
+                .attr("transform", "translate(0," + 200 + ")")
+                .call(d3.axisBottom(x));
+            var yAxis = d3.axisLeft(y);
+            var yAxisGroup = svg.append("g")
+                .attr("transform", "translate(50,0)")
+                .call(yAxis);
+            yAxisGroup
+                .style("display", "none");
+            svg.append("text")
+                .attr("x", (width / 2))
+                .attr("y", 0 - (margin.top / 5))
+                .attr("text-anchor", "middle")
+                .style("font-size", "40px")
+                .style("fill", "steelblue")
+                .style("font-weight", "bold")
+                .style("font-family", "Arial")
+                .style("text-decoration", "underline")
+                .text("Daily Meeting Timeline");
+    
+        });
+
+
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>q1</title>
+    <style type="text/css">
+      .tooltip {
+        height: 2.5rem;
+        width: 8rem;
+        font-size: larger;
+        font-weight: bolder;
+        position: absolute;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>q1</h1>
+    <div>
+      <div class="selectYear">
+        <input
+          type="radio"
+          id="2011"
+          name="year"
+          value="2011"
+          onchange="changeYear()"
+        />
+        <label for="2011">2011</label>
+        <input
+          type="radio"
+          id="2012"
+          name="year"
+          value="2012"
+          onchange="changeYear()"
+        />
+        <label for="2012">2012</label>
+        <input
+          type="radio"
+          id="2013"
+          name="year"
+          value="2013"
+          onchange="changeYear()"
+        />
+        <label for="2013">2013</label>
+      </div>
+      <div id="chart1"></div>
+      <div id="chart2"></div>
+    </div>
+    <script
+      src="https://code.jquery.com/jquery-3.6.4.min.js"
+      integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+      var yearListtemp = document.getElementsByName("year");
+      yearListtemp[0].checked = true;
+
+      // set the dimensions and margins of the graph
+      var margin = { top: 30, right: 30, bottom: 70, left: 60 },
+        width = 960 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+      // BAR_CHART - #chart1
+
+      // append the svg object to the body of the page
+      var svg1 = d3
+        .select("#chart1")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom + 100)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      svg1
+        .append("text")
+        .attr("class", "labelTop")
+        .attr("font-size", "15px")
+        .text("[" + "2011" + " data ]")
+        .attr("x", "25")
+        .attr("y", "10");
+
+      // ----------------
+      // Create tooltips
+      // ----------------
+      var tooltip1 = d3
+        .select("#chart1")
+        .append("div")
+        .style("opacity", 0)
+        .attr("class", "tooltip")
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "3px")
+        .style("border-radius", "5px")
+        .style("padding", "10px");
+
+      var tooltip2 = d3
+        .select("#chart2")
+        .append("div")
+        .style("opacity", 0)
+        .attr("class", "tooltip")
+        .style("background-color", "white")
+        .style("border", "solid")
+        .style("border-width", "3px")
+        .style("border-radius", "5px")
+        .style("padding", "10px");
+
+      const DisplayGraph1 = async (Year) => {
+        const data = [];
+        await d3.csv("./yearwise.csv", (d) => {
+          var barHeight = 0;
+
+          if (Year === "2011") {
+            barHeight = d.X2011;
+          } else if (Year === "2012") {
+            barHeight = d.X2012;
+          } else if (Year === "2013") {
+            barHeight = d.X2013;
+          }
+
+          data.push({ name: d.Name, value: barHeight });
+        });
+
+        var x = d3
+          .scaleBand()
+          .range([0, width])
+          .domain(
+            data.map(function (d) {
+              return d.name;
+            })
+          )
+          .padding(0.5);
+
+        svg1
+          .append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x))
+          .selectAll("text")
+          .style("text-anchor", "end");
+
+        var maxDataCnt = 0;
+        data.forEach((d) => {
+          maxDataCnt = Math.max(maxDataCnt, d.value);
+        });
+
+        // Add Y axis
+        var y = d3.scaleLinear().domain([0, maxDataCnt]).range([height, 0]);
+        svg1.append("g").call(d3.axisLeft(y));
+
+        // Bars
+        svg1
+          .selectAll(".mybar")
+          .data(data)
+          .enter()
+          .append("rect")
+          .attr("id", function (d, i) {
+            return "id1:" + i.toString();
+          })
+          .attr("class", function (d, i) {
+            return "chartCommonIndex" + i.toString();
+          })
+          .attr("x", function (d) {
+            return x(d.name);
+          })
+          .attr("y", function (d) {
+            return y(d.value);
+          })
+          .attr("width", x.bandwidth())
+          .attr("height", function (d) {
+            return height - y(d.value);
+          })
+          .attr("fill", "#69b3a2")
+          //bonus
+          .on("mouseover", function (e, d) {
+            tooltip1.html(d.name + ":" + d.value).style("opacity", 1);
+            // tooltip2
+            //   .html(
+            //     "X: " +
+            //       d.cx +
+            //       " Y: " +
+            //       d.cy +
+            //       "<br/>" +
+            //       "R: " +
+            //       d.radius +
+            //       " Name: " +
+            //       d.name
+            //   )
+            //   .style("opacity", 1);
+          })
+          .on("mousemove", function (e, d) {
+            // console.log(typeof(this),this.className.baseVal);
+            tooltip1
+              .style("left", e.pageX + "px")
+              .style("top", e.pageY + margin.top + "px");
+            // tooltip2
+            //   .style("left", e.pageX + "px")
+            //   .style("top", e.pageY + margin.top + "px");
+            d3.selectAll("." + this.className.baseVal).attr("fill", "#2790D5");
+          })
+          .on("mouseout", function () {
+            tooltip1.style("opacity", 0);
+            // tooltip2.style("opacity", 0);
+            d3.selectAll("." + this.className.baseVal).attr("fill", "#69b3a2");
+          });
+        //bonus
+      };
+
+      DisplayGraph1("2011");
+
+      // SCATTER_CHART - #chart2
+
+      // append the svg object to the body of the page
+      var svg2 = d3
+        .select("#chart2")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom + 100)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      svg2
+        .append("text")
+        .attr("class", "labelTop")
+        .attr("font-size", "15px")
+        .text("[" + "2011" + " data ]")
+        .attr("x", "25")
+        .attr("y", "10");
+
+      const DisplayGraph2 = async (Year) => {
+        const data = [];
+        await d3.csv("./yearwise.csv", (d) => {
+          var cx = 0;
+          var cy = 0;
+          var radius = 0;
+
+          if (Year === "2011") {
+            cx = d.X2011;
+            cy = d.Y2011;
+            radius = d.R2011;
+          } else if (Year === "2012") {
+            cx = d.X2012;
+            cy = d.Y2012;
+            radius = d.R2012;
+          } else if (Year === "2013") {
+            cx = d.X2013;
+            cy = d.Y2013;
+            radius = d.R2013;
+          }
+          data.push({ cx: cx, cy: cy, radius: radius, name: d.Name });
+        });
+
+        // console.log(data);
+        
+        var X = 0;
+        var Y = 0;
+        data.forEach((d) => {
+          X = Math.max(X, d.cx);
+          Y = Math.max(Y, d.cy);
+        });
+
+        // console.log(X,Y);
+
+        var x = d3.scaleLinear().range([0, width]).domain([0, X]);
+
+        svg2
+          .append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x))
+          .selectAll("text")
+          .style("text-anchor", "end");
+
+        // Add Y axis
+        var y = d3.scaleLinear().domain([0, Y]).range([height, 0]);
+        svg2.append("g").call(d3.axisLeft(y));
+
+        // Bars
+        svg2
+          .selectAll(".scatter")
+          .data(data)
+          .enter()
+          .append("circle")
+          .attr("id", function (d, i) {
+            return "id2:" + i.toString();
+          })
+          .attr("class", function (d, i) {
+            return "chartCommonIndex" + i.toString();
+          })
+          .attr("cx", function (d) {
+            return x(d.cx);
+          })
+          .attr("cy", function (d) {
+            return y(d.cy);
+          })
+          .attr("r", function (d) {
+            return d.radius;
+          })
+          .attr("fill", "#69b3a2")
+          //bonus
+          .on("mouseover", function (e, d) {
+            // tooltip1.html(d.name + ":" + d.value).style("opacity", 1);
+            tooltip2
+              .html(
+                "X: " +
+                  d.cx +
+                  " Y: " +
+                  d.cy +
+                  "<br/>" +
+                  "R: " +
+                  d.radius +
+                  " Name: " +
+                  d.name
+              )
+              .style("opacity", 1);
+          })
+          .on("mousemove", function (e, d) {
+            // console.log(typeof(this),this.className.baseVal);
+            // tooltip1
+            //   .style("left", e.pageX + "px")
+            //   .style("top", e.pageY + margin.top + "px");
+            tooltip2
+              .style("left", e.pageX + "px")
+              .style("top", e.pageY + margin.top + "px");
+            d3.selectAll("." + this.className.baseVal).attr("fill", "#2790D5");
+          })
+          .on("mouseout", function (d) {
+            tooltip1.style("opacity", 0);
+            tooltip2.style("opacity", 0);
+            d3.selectAll("." + this.className.baseVal).attr("fill", "#69b3a2");
+          });
+        //bonus
+      };
+
+      DisplayGraph2("2011");
+
+      const changeYear = () => {
+        var yearList = document.getElementsByName("year");
+        yearList.forEach((year) => {
+          if (year.checked) {
+            yearVal = year.value;
+            svg1.selectAll("rect").remove(); // remove previous bars
+            svg1.selectAll(".label").remove(); // remove previous labels
+            svg1.selectAll(".labelTop").remove();
+            svg1.selectAll("g").remove();
+
+            svg2.selectAll("circle").remove(); // remove previous plot
+            svg2.selectAll(".label").remove(); // remove previous labels
+            svg2.selectAll(".labelTop").remove();
+            svg2.selectAll("g").remove();
+
+            // console.log(yearVal);
+            svg1
+              .append("text")
+              .attr("class", "labelTop")
+              .attr("font-size", "15px")
+              .text("[" + yearVal + " data ]")
+              .attr("x", "25")
+              .attr("y", "10");
+
+            svg2
+              .append("text")
+              .attr("class", "labelTop")
+              .attr("font-size", "15px")
+              .text("[" + yearVal + " data ]")
+              .attr("x", "25")
+              .attr("y", "10");
+
+            DisplayGraph1(yearVal);
+            DisplayGraph2(yearVal);
+          }
+        });
+      };
+    </script>
+  </body>
+</html>

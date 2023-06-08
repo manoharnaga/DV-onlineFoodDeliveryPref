@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>q1</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+    <style type="text/css">
+      body {
+        background-color: #ffff;
+      }
+      #main {
+        position: relative;
+      }
+      #submit-button {
+        padding: 3px 7px 3px 7px;
+      }
+
+      #chart,
+      .div2 {
+        display: inline-block;
+      }
+      .div2 {
+        position: absolute;
+        top: 10%;
+      }
+
+      #course-table {
+        visibility: hidden;
+        /* background-color: #3498DB; */
+        border-radius: 15px;
+        /* border: 5px solid black; */
+      }
+
+      #course-table td {
+        padding: 15px;
+        font-family: "Courier New", Courier, monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Weekly TimeTable</h1>
+    <select id="select-branch">
+      <option value="selectbranch">Select Branch...</option>
+      <option value="CSE">CSE</option>
+      <option value="ECE">ECE</option>
+      <option value="CSD">CSD</option>
+    </select>
+
+    <!-- assuming only four years in college -->
+    <select id="select-year">
+      <option value="selectyear">Select Year...</option>
+      <option value="UG1">UG1</option>
+      <option value="UG2">UG2</option>
+      <option value="UG3">UG3</option>
+      <option value="UG4">UG4</option>
+    </select>
+
+    <button id="submit-button" disabled>Submit</button>
+    <div id="main">
+      <div id="chart"></div>
+      <div class="div2">
+        <table id="course-table">
+          <tr>
+            <td>Course Name</td>
+            <td id="course-name">-</td>
+          </tr>
+          <tr>
+            <td>Slot</td>
+            <td id="slot">-</td>
+          </tr>
+          <tr>
+            <td>ClassRoom No</td>
+            <td id="room-no">-</td>
+          </tr>
+          <tr>
+            <td>Course Credits</td>
+            <td id="course-credits">-</td>
+          </tr>
+          <tr>
+            <td>Course Category</td>
+            <td id="course-category">-</td>
+          </tr>
+          <tr>
+            <td>Faculty Name</td>
+            <td id="faculty-name">-</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <script
+      src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+      integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+      var parseTime = d3.timeParse("%H:%M");
+
+      const dataFunc = async () => {
+        var dataTemp = [];
+        await d3.csv("./weekly_timetable.csv", (d) => {
+          // console.log(d.startTime);
+          d.startTime = parseTime(d.startTime);
+          d.endTime = parseTime(d.endTime);
+          dataTemp.push(d);
+        });
+        console.log(dataTemp);
+
+        const submitButton = document.querySelector("#submit-button");
+        const selectBranch = document.querySelector("#select-branch");
+        const selectYear = document.querySelector("#select-year");
+
+        selectBranch.addEventListener("change", () => {
+          // console.log(selectBranch.value);
+          document.querySelector("#submit-button").disabled =
+            selectBranch.value === "selectbranch" ||
+            selectYear.value === "selectyear";
+        });
+
+        selectYear.addEventListener("change", () => {
+          // console.log(selectYear.value);
+          document.querySelector("#submit-button").disabled =
+            selectBranch.value === "selectbranch" ||
+            selectYear.value === "selectyear";
+        });
+
+        submitButton.addEventListener("click", function () {
+          const optBranch =
+            selectBranch.options[selectBranch.selectedIndex].value;
+          const optYear = selectYear.options[selectYear.selectedIndex].value;
+
+          // remove previous graph
+          d3.selectAll("rect").remove();
+          d3.selectAll("text").remove();
+          d3.selectAll("mybar").remove();
+          d3.selectAll("g").remove();
+          d3.selectAll(".legend").remove();
+          d3.selectAll("svg").remove();
+          document.getElementById("course-table").style.visibility = "hidden";
+
+          // console.log("Selected option:", optBranch, optYear);
+
+          var data = dataTemp.filter((row) => {
+            return row.year === optYear && row.branch === optBranch;
+          });
+
+          const dayList = ["Mon", "Tue", "Wed", "Thurs", "Fri", "Sat"];
+
+          // set the dimensions and margins of the graph
+          var margin = { top: 30, right: 30, bottom: 70, left: 60 },
+            width = 960 - margin.left - margin.right,
+            height = 400 - margin.top - margin.bottom;
+
+          // append the svg object to the body of the page
+          var svg = d3
+            .select("#chart")
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom + 100)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
+
+          var x = d3.scaleTime().range([0, width]);
+
+          var startTimeExtent = d3.extent(data, function (d) {
+            return d.startTime;
+          });
+
+          var startTimeMin = new Date(startTimeExtent[0]);
+          startTimeMin.setHours(startTimeMin.getHours());
+          //adding 3 hours extra to the last start time
+          var startTimeMax = new Date(startTimeExtent[1]);
+          startTimeMax.setHours(startTimeMax.getHours() + 2);
+
+          x.domain([startTimeMin, startTimeMax]);
+
+          svg
+            .append("g")
+            .attr("transform", "translate(" + 0 + "," + height + ")")
+            .call(d3.axisBottom(x))
+            .selectAll("text");
+
+          // Add Y axis
+          var y = d3.scaleBand().domain(dayList).range([0, height]);
+
+          svg
+            .append("g")
+            // .attr("transform", "translate(50,0)")
+            .call(d3.axisLeft(y));
+
+          // Bars
+          svg
+            .selectAll("mybar")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("x", (d) => x(d.startTime))
+            .attr("y", function (d) {
+              return y(d.day);
+            })
+            .attr("width", function (d) {
+              return x(d.endTime) - x(d.startTime);
+            })
+            .attr("height", y.bandwidth())
+            .attr("fill", (d) => {
+              if (d.type === "class") {
+                return "#3498DB";
+              } else if (d.type === "lab") {
+                return "#E59866";
+              } else if (d.type === "tut") {
+                return "#ABEBC6";
+              } else if (d.type === "lunch") {
+                return "#F7DC6F";
+              } else {
+                console.log("Error!");
+              }
+            })
+            .on("click", (event, d) => {
+              // console.log("Rectangle clicked!", d);
+              if (d.type !== "lunch") {
+                var courseTable = document.getElementById("course-table");
+                // console.log(courseTable);
+
+                courseTable.style.visibility = "visible";
+                if (d.type === "class") {
+                  courseTable.style.backgroundColor = "#3498DB";
+                } else if (d.type === "lab") {
+                  courseTable.style.backgroundColor = "#E59866";
+                } else if (d.type === "tut") {
+                  courseTable.style.backgroundColor = "#ABEBC6";
+                } else if (d.type === "lunch") {
+                  courseTable.style.backgroundColor = "#F7DC6F";
+                } else {
+                  console.log("Error!");
+                }
+
+                const formattedTime = (hours,minutes) => `${hours}:${minutes < 10 ? '0' : ''}${minutes}`;
+
+                document.getElementById("course-name").innerHTML =
+                  d.course_name;
+                document.getElementById("slot").innerHTML =
+                formattedTime(d.startTime.getHours(),d.startTime.getMinutes())+ "-" +formattedTime(d.endTime.getHours(),d.endTime.getMinutes());
+                document.getElementById("room-no").innerHTML = d.room_no;
+                document.getElementById("course-credits").innerHTML =
+                  d.course_credits;
+                document.getElementById("course-category").innerHTML =
+                  d.course_category;
+                document.getElementById("faculty-name").innerHTML =
+                  d.faculty_name;
+              }
+            });
+
+          svg
+            .selectAll("mybar")
+            .data(data)
+            .enter()
+            .append("text")
+            .text((d) => d.course_name)
+            .attr("x", (d) => x(d.startTime) + 57)
+            .attr("y", function (d) {
+              return y(d.day) + 21;
+            })
+            .style("font-size", "13px")
+            .style("fill", "black")
+            .style("text-anchor", "middle")
+            .style("alignment-baseline", "middle");
+
+          var color = d3
+            .scaleOrdinal()
+            .domain(["Class", "Lab", "Tutorial", "Lunch"])
+            .range(["#3498DB", "#E59866", "#ABEBC6", "#F7DC6F"]);
+
+          data.forEach((d) => {
+            var legend = svg
+              .selectAll(".legend")
+              .data(color.domain().slice().reverse())
+              .enter()
+              .append("g")
+              .attr("class", "legend")
+              .attr("transform", function (d, i) {
+                return "translate(" + i * -150 + ",341)";
+              });
+            legend
+              .append("rect")
+              .attr("x", width + -83)
+              .attr("width", 10)
+              .attr("height", 10)
+              .style("fill", color);
+
+            legend
+              .append("text")
+              .attr("x", width - 70)
+              .attr("y", 10)
+              .attr("width", 40)
+              .attr("dy", ".1em")
+              .style("text-anchor", "start")
+              .text(function (d) {
+                return d;
+              });
+          });
+        });
+      };
+
+      dataFunc();
+    </script>
+  </body>
+</html>
