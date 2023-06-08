@@ -1,7 +1,7 @@
 # Data Visualisation-Project-2k23
 ## Team: Insight Imagers
 
-### FrameWork for Visualisations: D3.js
+### FrameWork: D3.js
 ### DataSet: [Online Food Delivery Preferences-Bangalore region](https://www.kaggle.com/datasets/benroshan/online-food-delivery-preferencesbangalore-region "Online Food Delivery Preferences-Bangalore region")
 
 </br>

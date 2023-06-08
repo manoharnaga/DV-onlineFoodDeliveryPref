@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <!-- Load Leaflet -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+      integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+      integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+      crossorigin=""
+    ></script>
+
+    <style>
+      #mapid {
+        height: 700px;
+        width: 700px;
+      }
+      #invalid_input {
+        color: red;
+      }
+      .tooltip {
+        height: 2.5rem;
+        width: 8rem;
+        font-size: larger;
+        font-weight: bolder;
+        position: absolute;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Create an element where the map will take place -->
+    <div>
+      <h3 id="showRadius">Current Radius: 1500</h3>
+      <input
+        type="number"
+        id="locaterRadius"
+        placeholder="Change Radius of circle pointer..."
+      />
+      <button onclick="setLocaterRadius()">Submit</button>
+    </div>
+    <div id="mapid"></div>
+    <div id="pie1"></div>
+
+    <!-- Load d3.js and the geo projection plugin -->
+    <script src="https://d3js.org/d3.v7.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+    <script src="./heatmap.js" type="module"></script>
+
+    <script>
+      // mapid is the id of the div where the map will appear
+      var map = L.map("mapid").setView([12.9716, 77.5946], 12); // center position + zoom
+      var circlePtr = null;
+      var locaterRadius = 1500;
+      function setLocaterRadius() {
+        const inpRadius = document.querySelector("#locaterRadius").value;
+        circlePtr?.setRadius(inpRadius);
+        locaterRadius = inpRadius;
+        console.log(document.querySelector("#showRadius").value);
+        document.querySelector("#showRadius").innerHTML =
+          "Current Radius:  " + inpRadius.toString();
+      }
+
+      // Add a tile to the map = a background. Comes from OpenStreetmap
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+          'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Add a svg layer to the map
+      L.svg().addTo(map);
+      
+      function pieChart(dataPie, preference, pie_id) {
+        console.log(dataPie, preference, pie_id);
+        // Set the dimensions of the canvas
+        var width = 500;
+        var height = 500;
+        var radius = Math.min(width, height) / 2;
+
+        // Define the color scale
+        var color = d3.scaleOrdinal(d3.schemeCategory10);
+        var dataTemp = [
+          { Snacks: 0 },
+          { Lunch: 0 },
+          { Dinner: 0 },
+          { Breakfast: 0 },
+        ];
+
+        for (var i = 0; i < dataPie.length; i++) {
+          var meal = dataPie[i][preference];
+          if (meal === "Snacks") {
+            dataTemp[0][meal] += 1;
+          } else if (meal === "Lunch") {
+            dataTemp[1][meal] += 1;
+          } else if (meal === "Dinner") {
+            dataTemp[2][meal] += 1;
+          } else if (meal === "Breakfast") {
+            dataTemp[3][meal] += 1;
+          }
+        }
+
+        var data = [];
+        for (let i = 0; i < dataTemp.length; i++) {
+          for (const pref in dataTemp[i]) {
+            if (Object.hasOwnProperty.call(dataTemp[i], pref)) {
+              if (dataTemp[i][pref]) {
+                data.push({ label: pref, value: dataTemp[i][pref] });
+              }
+            }
+          }
+        }
+
+        // Define the arc generator
+        var arc = d3
+          .arc()
+          .outerRadius(radius - 10)
+          .innerRadius(0);
+
+        // Define the pie layout
+        var pie = d3
+          .pie()
+          .sort(null)
+          .value(function (d) {
+            return d.value;
+          });
+
+        // Append the SVG canvas to the page
+        var svg = d3
+          .select(pie_id)
+          .append("svg")
+          .attr("class", "pieChart")
+          .attr("width", width)
+          .attr("height", height)
+          .append("g")
+          .attr("class", "pieChart")
+          .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+        // Add the arcs
+        var g = svg
+          .selectAll(".arc")
+          .data(pie(data))
+          .enter()
+          .append("g")
+          .attr("class", "pieChart")
+          .attr("class", "arc");
+
+        g.append("path")
+          .attr("class", "pieChart")
+          .attr("d", arc)
+          .style("fill", function (d) {
+            return color(d.data.label);
+          });
+
+        // Add the text labels
+        g.append("text")
+          .attr("class", "pieChart")
+          .attr("transform", function (d) {
+            return "translate(" + arc.centroid(d) + ")";
+          })
+          .attr("dy", ".35em")
+          .text(function (d) {
+            return d.data.label;
+          });
+      }
+
+      async function temp() {
+        const dataTemp = await d3.csv("./onlinedeliverydata.csv");
+
+        var dataTemp2 = [];
+        dataTemp.forEach((d) => {
+          dataTemp2.push({
+            long: d.longitude,
+            lat: d.latitude,
+          });
+        });
+        const data = dataTemp2;
+
+        data.forEach((d) => {
+          var lat = d.lat;
+          var lng = d.long;
+          L.circle([lat, lng], {
+            color: "black",
+            fillColor: "black",
+            fillOpacity: 1,
+            radius: 120,
+            name: "P-2",
+            interactive: true,
+          }).addTo(map);
+          //   L.marker([lat, lng]).addTo(map);
+        });
+
+        map.on("click", function (e) {
+          var lat = e.latlng.lat;
+          var lng = e.latlng.lng;
+
+          circlePtr?.remove();
+          // Add a marker to the map at the clicked location
+
+          circlePtr = L.circle([lat, lng], {
+            color: "blue",
+            fillColor: "blue",
+            fillOpacity: 0.3,
+            radius: locaterRadius,
+            name: "P-1",
+            interactive: true,
+          }).addTo(map);
+          Rev = d.Reviews;
+            printFrequency(Rev, myarr);
+
+            // console.log(arr)
+            const sortedWords = myarr.sort((a, b) => b.size - a.size);
+            const top10Words = sortedWords.slice(0, 60);
+            console.log(top10Words)
+            var layout = d3.layout.cloud()
+              .size([500, 500])
+              .words(top10Words.map(function (di) { console.log(di.size); return { text: di.word, size: di.size }; }))
+              .padding(5)        //space between words
+              .rotate(function () { return ~~(Math.random() * 2) * 90; })
+              .fontSize(function (d) { return d.size * 20; })      // font size of words
+              .on("end", draw);
+            function draw(words) {
+              svg1
+                .append("g")
+                .attr("class", "wc")
+                .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function (d) { return d.size; })
+                .style("fill", "#69b3a2")
+                .attr("text-anchor", "middle")
+                .style("font-family", "Impact")
+                .attr("transform", function (d) {
+                  return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                })
+                .text(function (d) { return d.text; });
+            }
+            svg1.selectAll(".wc").remove()
+            layout.start();
+          const dataPie = [];
+          dataTemp.forEach((d) => {
+            // calculate distance between the two points
+            var R = 6371e3; // metres
+            var φ1 = (lat * Math.PI) / 180; // φ, λ in radians
+            var φ2 = (d.latitude * Math.PI) / 180;
+            var Δφ = ((d.latitude - lat) * Math.PI) / 180;
+            var Δλ = ((d.longitude - lng) * Math.PI) / 180;
+            var a =
+              Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+              Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            var dist = R * c; // in metres
+
+            if (dist <= locaterRadius) {
+              dataPie.push(d);
+            }
+          });
+
+          var p = "Meal(P1)";
+          d3.selectAll(".pieChart").remove();
+          pieChart(dataPie, p, "#pie1");
+        });
+      }
+      temp();
+    </script>
+  </body>
+</html>

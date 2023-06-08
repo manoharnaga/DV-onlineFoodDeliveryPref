@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>q2</title>
+  </head>
+  <body>
+    <h1>q2</h1>
+    <div>
+      <div>
+        <svg></svg>
+      </div>
+      <div class="selectYear">
+        <input
+          type="radio"
+          id="2011"
+          name="year"
+          value="2011"
+          onchange="changeYear()"
+        />
+        <label for="2011">2011</label>
+        <input
+          type="radio"
+          id="2012"
+          name="year"
+          value="2012"
+          onchange="changeYear()"
+        />
+        <label for="2012">2012</label>
+        <input
+          type="radio"
+          id="2013"
+          name="year"
+          value="2013"
+          onchange="changeYear()"
+        />
+        <label for="2013">2013</label>
+      </div>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+      // setInitialGraph
+      var yearListtemp = document.getElementsByName("year");
+      yearListtemp[0].checked = true;
+      const maxHeight = 120;
+      const maxWidth = 120;
+      var svg = d3.select("svg");
+      svg.attr("height", maxHeight.toString());
+      svg.attr("width", maxWidth.toString());
+      svg
+        .append("text")
+        .attr("class", "labelTop")
+        .attr("font-size", "10px")
+        .text("[" + "2011" + " data ]")
+        .attr("x", "25")
+        .attr("y", "10");
+      // setInitialGraph
+
+      const DisplayGraph = async (Year) => {
+        svg.selectAll("circle").remove(); // remove previous chart
+        svg.selectAll(".label").remove(); // remove previous labels
+
+        await d3.csv("./yearwise.csv", (data, index) => {
+          var cx = "0";
+          var cy = "0";
+          var radius = "0";
+
+          if (Year === "2011") {
+            cx = data.X2011;
+            cy = data.Y2011;
+            radius = data.R2011;
+          } else if (Year === "2012") {
+            cx = data.X2012;
+            cy = data.Y2012;
+            radius = data.R2012;
+          } else if (Year === "2013") {
+            cx = data.X2013;
+            cy = data.Y2013;
+            radius = data.R2013;
+          }
+
+          cx = Number(cx);
+          cy = Number(cy);
+
+          svg
+            .append("circle")
+            .attr("stroke", "black")
+            .attr("cx", (cx+10).toString())
+            .attr("cy", (maxHeight-cy-10).toString())
+            .attr("r", radius)
+            .attr("fill", "red")
+            //bonus
+            .on("mouseenter", function (actual, i) {
+              d3.select(this).attr("fill", "blue");
+              svg
+                .append("text")
+                .attr("font-size", "5px")
+                .text("X: " + cx.toString() + " Y: " + cy.toString() + " R: " + radius + " Name: " + data.Name)
+                .attr("class", "hover")
+                .attr("x", (cx + Number(radius)).toString())
+                .attr("y", (maxHeight-cy).toString());
+            })
+            .on("mouseleave", function (actual, i) {
+              d3.select(this).attr("fill", "red");
+              svg.selectAll(".hover").remove();
+            });
+          //bonus
+
+          // Y-label
+          svg
+            .append("text")
+            .attr("class", "label")
+            .attr("font-size", "5px")
+            .attr("x", "15")
+            .attr("y", "30")
+            .attr("transform","rotate(-90,15,30)")
+            .text("Y[ " + Year + " data]");
+
+          // X-label
+          svg
+            .append("text")
+            .attr("class", "label")
+            .attr("font-size", "5px")
+            .attr("x", "50")
+            .attr("y", "120")
+            .text("X[ " + Year + " data]");
+        });
+
+        // Y-Axis
+        svg
+          .append("line")
+          .attr("x1", "10")
+          .attr("y1", "10")
+          .attr("x2", "10")
+          .attr("y2", "115")
+          .style("stroke", "red");
+
+        // X-Axis
+        svg
+          .append("line")
+          .attr("x1", "5")
+          .attr("y1", "110")
+          .attr("x2", "110")
+          .attr("y2", "110")
+          .style("stroke", "red");
+
+        for (let i = 0; i * 10 < 100; i++) {
+          // Y - axis
+          svg
+            .append("text")
+            .attr("font-size", "5px")
+            .attr("x", "0")
+            .attr("y", (maxHeight - i * 10 - 10).toString())
+            .text((i * 10).toString());
+        }
+        for (let i = 0; i * 5 < 100; i++) {
+          // X - axis
+          svg
+            .append("text")
+            .attr("font-size", "3px")
+            .attr("x", (i * 5 + 10).toString())
+            .attr("y", "115")
+            .text((i * 5).toString());
+        }
+      };
+
+      // setInitialGraph
+      DisplayGraph("2011");
+      // setInitialGraph
+
+      const changeYear = () => {
+        var yearList = document.getElementsByName("year");
+        yearList.forEach((year) => {
+          if (year.checked) {
+            yearVal = year.value;
+            svg.selectAll(".labelTop").remove();
+            svg
+              .append("text")
+              .attr("class", "labelTop")
+              .attr("font-size", "10px")
+              .text("[" + yearVal + " data ]")
+              .attr("x", "25")
+              .attr("y", "10");
+            DisplayGraph(yearVal);
+          }
+        });
+      };
+    </script>
+  </body>
+</html>

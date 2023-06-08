@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>q2</title>
+  </head>
+  <body>
+    <h1>Djoafsijd</h1>
+    <div id="stacked"></div>
+    <script src="https://d3js.org/d3.v7.js"></script>
+    <script>
+      async function temp() {
+        // set the dimensions and margins of the graph
+        var margin = { top: 10, right: 30, bottom: 20, left: 50 },
+          width = 460 - margin.left - margin.right,
+          height = 400 - margin.top - margin.bottom;
+        const data2  = await d3.csv('https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/data_stacked.csv');
+        console.log(data2);
+        console.log(typeof(data2[data2.length]));
+        const dataTemp = await d3.csv('./late-night-ratings.csv');
+        // console.log(dataTemp);
+        var shows = {};
+        for (let i = 0; i < dataTemp.length; i++) {
+            const elem = dataTemp[i];
+            shows[dataTemp[i].Name]=-1;
+        }
+        var curYear = "1991"
+        // console.log(shows);
+        let i = 0;
+        var dataTemp2 = [];
+        var temp = {};
+        while (i < dataTemp.length) { 
+            temp = {Year:curYear, ...shows};
+            // console.log(dataTemp[i].Year);
+            // console.log(temp);
+            while((i<dataTemp.length) && (dataTemp[i].Year == curYear)){
+                temp[dataTemp[i].Name] = parseFloat(dataTemp[i]["Rating (M)"]);
+                i++;
+            }
+            if(i>=dataTemp.length) break;
+            // console.log(i);
+            curYear = dataTemp[i].Year;
+            dataTemp2.push(temp);
+        }
+        // var data = [];
+        for (let i = 0; i < dataTemp2.length; i++) {
+            for (const key in dataTemp2[i]) {
+                if(dataTemp2[i][key]==-1){
+                    dataTemp2[i][key]=0;
+                }
+            }
+        }
+        var list = ["Year"];
+        for(const key in shows){
+          list.push(key);
+        }
+        columns = {list};
+        dataTemp2.push(columns);
+        const data = dataTemp2;
+        console.log(data);
+        // append the svg object to the body of the page
+        var svg = d3
+          .select("#stacked")
+          .append("svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+          .append("g")
+          .attr(
+            "transform",
+            "translate(" + margin.left + "," + margin.top + ")"
+          );
+        
+
+        // console.log(data[0]);
+        // List of subgroups = header of the csv files = soil condition here
+        var subgroups = Object.keys(data[0]).slice(1);
+        // console.log(subgroups);
+        // List of groups = species here = value of the first column called group -> I show them on the X axis
+        var groups = d3
+          .map(data, function (d) {
+            return d.Year;
+          })
+          .keys();
+        // console.log(groups);
+          var xyz = 1991;
+          while(xyz<=2014){
+            list.push(xyz.toString());
+            xyz++;
+          }
+        // Add X axis
+        var x = d3.scaleBand().domain(list).range([0, width]).padding([0.7]);
+        svg
+          .append("g")
+          .attr("transform", "translate(0," + height + ")")
+          .call(d3.axisBottom(x).tickSizeOuter(0));
+        
+        // Add Y axis
+        var y = d3.scaleLinear().domain([0, 20]).range([height, 0]);
+        svg.append("g").call(d3.axisLeft(y));
+
+        // color palette = one color per subgroup
+        var color = d3
+          .scaleOrdinal()
+          .domain(subgroups)
+          .range(["#e41a1c", "#377eb8", "#4daf4a","#F7DC6F","#927F2F", "#2F5C92","#43922F","#924C2F","#B93A5D"]);
+    
+
+        //stack the data? --> stack per subgroup
+        var stackedData = d3.stack().keys(subgroups)(data);
+        
+        // Show the bars
+        svg
+          .append("g")
+          .selectAll("g")
+          // Enter in the stack data = loop key per key = group per group
+          .data(stackedData)
+          .enter()
+          .append("g")
+          .attr("fill", function (d) {
+            return color(d.key);
+          })
+          .selectAll("rect")
+          // enter a second time = loop subgroup per subgroup to add all rectangles
+          .data(function (d) {
+            return d;
+          })
+          .enter()
+          .append("rect")
+          .attr("x", function (d,i) {
+            // console.log(x(d.data.Year));
+            return x(d.data.Year);
+          })
+          .attr("y", function (d) {
+            return y(d[1]);
+          })
+          .attr("height", function (d) {
+            return y(d[0]) - y(d[1]);
+          })
+          .attr("width", x.bandwidth());
+      }
+      temp();
+    </script>
+  </body>
+</html>
