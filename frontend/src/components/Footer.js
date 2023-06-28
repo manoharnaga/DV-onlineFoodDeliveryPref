@@ -20,8 +20,8 @@ export default function Footer() {
                             <h3>Team Members</h3>
 
                             <div className='my-4'>
-                                <p className='m-2'>Nirmala Kadali</p>
                                 <p className='m-2'>Manohar Naga</p>
+                                <p className='m-2'>Nirmala Kadali</p>
                                 <p className='m-2'>Md Faizal Karim</p>
                             </div>
                         </div>
