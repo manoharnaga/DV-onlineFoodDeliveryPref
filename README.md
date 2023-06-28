@@ -8,6 +8,7 @@
 3. Md Faizal Karim
 
 ### FrameWork: D3.js
+### Live: [Click Here!](https://tastemap.netlify.app/ "Click Here!")
 ### Video: [Click Here!](https://drive.google.com/file/d/1PSyF956O5RvD3_K3QssOuYBUd19g0QGI/view?usp=drive_link "Click Here!")
 ### DataSet: [Online Food Delivery Preferences-Bangalore region](https://www.kaggle.com/datasets/benroshan/online-food-delivery-preferencesbangalore-region "Online Food Delivery Preferences-Bangalore region")
 
